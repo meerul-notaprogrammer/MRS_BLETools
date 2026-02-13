@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.log
+*.tmp
+*.bak
+reports/
+sensor_data_log.txt

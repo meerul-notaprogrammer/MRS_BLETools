@@ -1,0 +1,202 @@
+================================================================================
+                    MRS BLE SCANNER V0.1 - FEATURES
+================================================================================
+
+VERSION: 0.1.2
+STATUS: Stable - Basic Functionality
+RELEASE DATE: 2024
+
+================================================================================
+                            CORE FEATURES
+================================================================================
+
+1. BLUETOOTH LOW ENERGY (BLE) CONNECTIVITY
+   ✓ Automatic BLE device scanning
+   ✓ Connect to NB-IoT waste bin sensors
+   ✓ Real-time data reception
+   ✓ Stable connection management
+
+2. SENSOR COMMUNICATION
+   ✓ Send AT commands to sensor
+   ✓ Receive sensor responses
+   ✓ Real-time data display
+   ✓ Command history
+
+3. HTTP FORWARDING
+   ✓ Forward sensor data to API endpoint
+   ✓ Configurable API URL
+   ✓ Enable/disable forwarding on-the-fly
+   ✓ POST request with sensor data
+
+4. USER INTERFACE
+   ✓ Command-line interface
+   ✓ Color-coded output
+   ✓ Interactive menu (Ctrl+P)
+   ✓ Real-time data streaming
+
+5. AUTO-SETUP
+   ✓ Automatic Python installation check
+   ✓ Auto-install required packages
+   ✓ User agreement prompt
+   ✓ Quick start with Start.bat
+
+================================================================================
+                        SUPPORTED COMMANDS
+================================================================================
+
+SYSTEM COMMANDS:
+   • SYS_RESET    - Reset sensor (disconnects BLE)
+   • SYS_OPEN     - Open receiving mode (disconnects BLE)
+   • SYS_SLEEP    - Enter sleep mode (disconnects BLE)
+   • SYS_INFO     - Get sensor information
+
+SENSOR CONFIGURATION:
+   • S1_DEPTH     - Set main sensor depth (cm)
+   • S2_DEPTH     - Set secondary sensor depth (cm)
+   • DISTANCE     - Get distance sensor readings
+
+NETWORK COMMANDS:
+   • NB_SHOW      - Show NB-IoT system info
+   • TEST_PACKET  - Send test packet (06)
+
+================================================================================
+                        MENU OPTIONS (Ctrl+P)
+================================================================================
+
+1. Send command to sensor
+   - Type any AT command
+   - Send custom commands
+   - View responses in real-time
+
+2. Enable/disable HTTP forwarding
+   - Toggle API forwarding
+   - Configure endpoint URL
+   - Monitor POST requests
+
+3. Toggle CR+LF
+   - Add carriage return + line feed
+   - Adjust command formatting
+   - Compatibility mode
+
+4. Back to receive mode
+   - Return to data monitoring
+   - Continue receiving sensor data
+
+5. Quit
+   - Clean exit
+   - Close BLE connection
+
+================================================================================
+                        KEYBOARD SHORTCUTS
+================================================================================
+
+Ctrl+P  - Open command menu
+Ctrl+C  - End program (emergency exit)
+
+================================================================================
+                        TECHNICAL SPECIFICATIONS
+================================================================================
+
+REQUIREMENTS:
+   • Windows 10/11
+   • Python 3.8 or higher
+   • Bluetooth adapter (BLE compatible)
+
+DEPENDENCIES:
+   • bleak (BLE communication)
+   • requests (HTTP forwarding)
+   • colorama (colored terminal output)
+
+COMMUNICATION:
+   • Protocol: Bluetooth Low Energy (BLE)
+   • Service UUID: Custom NB-IoT sensor service
+   • Characteristic: Read/Write/Notify
+
+DATA HANDLING:
+   • Real-time streaming
+   • Console output
+   • Optional HTTP forwarding
+   • No local storage
+
+================================================================================
+                            LIMITATIONS
+================================================================================
+
+❌ No automatic diagnostics
+❌ No PDF report generation
+❌ No network layer analysis
+❌ No data logging to file
+❌ No batch testing capabilities
+❌ Manual command entry only
+❌ No sensor auto-detection
+❌ No report archiving
+
+================================================================================
+                            USE CASES
+================================================================================
+
+✓ Basic sensor communication
+✓ Manual testing and debugging
+✓ Real-time data monitoring
+✓ Quick sensor configuration
+✓ API integration testing
+✓ Command exploration
+
+================================================================================
+                        PACKAGE CONTENTS
+================================================================================
+
+📁 MRS BLE Scanner V0.1/
+   ├── Start.bat       - Auto-launcher script
+   ├── Scanner.py      - Main application (27KB)
+   └── README.txt      - Basic documentation
+
+================================================================================
+                        TYPICAL WORKFLOW
+================================================================================
+
+1. Launch Start.bat
+2. Accept user agreement
+3. Enter API URL (optional)
+4. Wait for BLE scan
+5. Select sensor from list
+6. Monitor real-time data
+7. Press Ctrl+P to send commands
+8. View responses in console
+9. Ctrl+C to exit
+
+================================================================================
+                        TARGET USERS
+================================================================================
+
+• Developers testing NB-IoT sensors
+• Field technicians doing quick checks
+• Engineers debugging sensor communication
+• Users needing basic BLE connectivity
+
+================================================================================
+                        UPGRADE PATH
+================================================================================
+
+For advanced features, upgrade to V0.2:
+   ✓ Automatic network diagnostics
+   ✓ PDF report generation
+   ✓ Smart SIM detection
+   ✓ Layer-by-layer analysis
+   ✓ Dustbin sensor auto-detection
+   ✓ Professional reporting
+
+================================================================================
+                            NOTES
+================================================================================
+
+• V0.1 is the foundation version
+• Focus on basic connectivity and communication
+• Minimal features, maximum stability
+• Perfect for learning and basic testing
+• No advanced diagnostics or reporting
+
+================================================================================
+Last Updated: February 14, 2026
+Maintained by: MRS Development Team
+================================================================================

