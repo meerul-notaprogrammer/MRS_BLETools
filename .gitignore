@@ -1,7 +1,28 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Generated reports
+reports/
+
+# Logs & temp
 *.log
 *.tmp
 *.bak
-reports/
 sensor_data_log.txt
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Agent / AI tools
+.agent/
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
